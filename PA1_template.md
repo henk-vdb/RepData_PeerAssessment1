@@ -1,5 +1,13 @@
-# Reproducible Research: Peer Assessment 1
-henk van den berg  
+---
+title: "Reproducible Research: Peer Assessment 1"
+author: "henk van den berg"
+output: 
+  html_document:
+    keep_md: true
+---
+
+Reproducible Research: Peer Assessment 1
+========================================
 
 <!--
 Downloading a dataset from the internet and unzipping it into a local data
@@ -66,11 +74,6 @@ type [POSIXct] [3]. But first, read in the raw data:
 ```r
 data <- read.csv(data.file, stringsAsFactors = FALSE)
 library(knitr)
-```
-
-<div style="width:30em">
-
-```r
 kable(tail(data, n = 3), format = "markdown")
 ```
 
@@ -82,19 +85,13 @@ kable(tail(data, n = 3), format = "markdown")
 |17567 |    NA|2012-11-30 |     2350|
 |17568 |    NA|2012-11-30 |     2355|
 
-</div>
-
 Create an extra `time` field on basis of `date` and `interval` values:
 
 
 ```r
 data$time <- as.POSIXct(paste0(data$date, " ", as.integer(data$interval/100), 
         ":", data$interval %% 100))
-```
 
-<div style="width:30em">
-
-```r
 kable(data[287:292, ], format = "markdown")
 ```
 
@@ -108,8 +105,6 @@ kable(data[287:292, ], format = "markdown")
 |290 |     0|2012-10-02 |        5|2012-10-02 00:05:00 |
 |291 |     0|2012-10-02 |       10|2012-10-02 00:10:00 |
 |292 |     0|2012-10-02 |       15|2012-10-02 00:15:00 |
-
-</div>
 
 Here is a summary of the preprocessed data:
 
@@ -162,7 +157,7 @@ abline(v = meantotal, col = "blue", lwd = 2, lty = 2)
 abline(v = mediantotal, col = "red", lwd = 1, lty = 5)
 ```
 
-![](PA1_template_files/figure-html/histsteps-1.png) 
+![plot of chunk histsteps](figure/histsteps-1.png) 
 
 It appears there is a symetric distribution of the data, with mean and median 
 values almost equal.
