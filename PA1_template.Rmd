@@ -107,7 +107,6 @@ abline(v = meantotal, col = "blue", lwd = 2, lty = 2)
 abline(v = mediantotal, col = "red", lwd = 1, lty = 5)
 ```
 
-<img src="figure/histsteps-1.png" alt="histogram 1"/>
 
 It appears there is a symetric distribution of the data, with mean and median 
 values almost equal.
