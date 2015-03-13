@@ -159,7 +159,7 @@ abline(v = mediantotal, col = "red", lwd = 1, lty = 5)
 
 ![plot of chunk histsteps](figure/histsteps-1.png) 
 
-<img src="figure/hissteps-1.png" alt="histogram 1"/>
+<img src="figure/histsteps-1.png" alt="histogram 1"/>
 
 It appears there is a symetric distribution of the data, with mean and median 
 values almost equal.
