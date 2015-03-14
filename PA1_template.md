@@ -9,6 +9,12 @@ output:
 Reproducible Research: Peer Assessment 1
 ========================================
 
+
+```r
+echo = TRUE
+options(scipen = 1)
+```
+
 <!--
 Downloading a dataset from the internet and unzipping it into a local data
 directory is a repeating chore. The `.LoadData()` function in 'load_data.R' does
@@ -92,7 +98,7 @@ Create an extra `time` field on basis of `date` and `interval` values:
 data$time <- as.POSIXct(paste0(data$date, " ", as.integer(data$interval/100), 
         ":", data$interval %% 100))
 
-kable(data[287:292, ], format = "markdown")
+kable(data[287:290, ], format = "markdown")
 ```
 
 
@@ -103,8 +109,6 @@ kable(data[287:292, ], format = "markdown")
 |288 |    NA|2012-10-01 |     2355|2012-10-01 23:55:00 |
 |289 |     0|2012-10-02 |        0|2012-10-02 00:00:00 |
 |290 |     0|2012-10-02 |        5|2012-10-02 00:05:00 |
-|291 |     0|2012-10-02 |       10|2012-10-02 00:10:00 |
-|292 |     0|2012-10-02 |       15|2012-10-02 00:15:00 |
 
 Here is a summary of the preprocessed data:
 
@@ -153,12 +157,11 @@ hist(aggdata1$steps,
      main="Histogram of total amount of steps per day", 
      xlab="steps per day (October - November, 2012)",
      col = "lavender")
+abline(v = mediantotal, col = "red", lwd = 2, lty = 1)
 abline(v = meantotal, col = "blue", lwd = 2, lty = 2)
-abline(v = mediantotal, col = "red", lwd = 1, lty = 5)
 ```
 
 ![plot of chunk histsteps](figure/histsteps-1.png) 
-
 
 It appears there is a symetric distribution of the data, with mean and median 
 values almost equal.
