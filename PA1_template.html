@@ -203,8 +203,7 @@ hr {
 <body>
 <h1>Reproducible Research: Peer Assessment 1</h1>
 
-<pre><code class="r">echo = TRUE
-options(scipen = 1)
+<pre><code class="r">knitr::opts_chunk$set(echo=TRUE)
 </code></pre>
 
 <!--
@@ -267,8 +266,7 @@ taken</li>
 reveals several other things. But first, read in the raw data:</p>
 
 <pre><code class="r">data &lt;- read.csv(data.file, stringsAsFactors = FALSE)
-library(knitr)
-kable(tail(data, n = 3), format = &quot;markdown&quot;)
+knitr::kable(tail(data, n = 3), format = &quot;markdown&quot;)
 </code></pre>
 
 <table><thead>
@@ -307,7 +305,7 @@ the notion of what day of the week the measurements were taken.</p>
 
 <pre><code class="r">data$date &lt;- as.POSIXct(data$date)
 data$day &lt;- as.factor(weekdays(data$date, abbreviate = TRUE))
-kable(data[287:290, ], format = &quot;markdown&quot;)
+knitr::kable(data[287:290, ], format = &quot;markdown&quot;)
 </code></pre>
 
 <table><thead>
@@ -352,7 +350,7 @@ kable(data[287:290, ], format = &quot;markdown&quot;)
 <p><a id="summary"/>
 Here is a summary of the preprocessed data:</p>
 
-<pre><code class="r">kable(summary(data), format = &quot;markdown&quot;)
+<pre><code class="r">knitr::kable(summary(data), format = &quot;markdown&quot;)
 </code></pre>
 
 <table><thead>
@@ -421,7 +419,7 @@ Here is a summary of the preprocessed data:</p>
 aggdata2 &lt;- aggregate(data$steps, by=list(data$date), FUN=sum, na.rm=TRUE)
 
 meantotal &lt;- as.integer(mean(aggdata1$steps))
-mediantotal &lt;- median(aggdata1$steps)
+mediantotal &lt;- as.integer(median(aggdata1$steps))
 </code></pre>
 
 <p>There are 2304 missing values in 
@@ -506,7 +504,7 @@ newdata[is.na(newdata$steps), ]$steps &lt;- round(newdata[is.na(newdata$steps), 
 newdata &lt;- newdata[order(newdata$date, newdata$interval), ]
 newdata &lt;- newdata[, c(3, 4, 1, 2)]
 row.names(newdata) &lt;- NULL
-kable(summary(newdata), format = &quot;markdown&quot;)
+knitr::kable(summary(newdata), format = &quot;markdown&quot;)
 </code></pre>
 
 <table><thead>
@@ -574,7 +572,7 @@ imputing missing data.</p>
 
 <pre><code class="r">aggdata &lt;- aggregate(steps ~ date, data = newdata, sum)
 newmeantotal &lt;- as.integer(mean(aggdata$steps))
-newmediantotal &lt;- median(aggdata$steps)
+newmediantotal &lt;- as.integer(median(aggdata$steps))
 diffmean &lt;- format(((newmeantotal - meantotal)/meantotal) * 100, 
                    digits = 2, nsmall = 1)
 diffmedian &lt;- format(((newmediantotal - mediantotal)/mediantotal) * 100, 

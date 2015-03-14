@@ -9,9 +9,8 @@ output:
 Reproducible Research: Peer Assessment 1
 ========================================
 
-```{r}
-echo = TRUE
-options(scipen = 1)
+```{r global_options, include=TRUE}
+knitr::opts_chunk$set(echo=TRUE)
 ```
 
 <!--
@@ -60,8 +59,7 @@ reveals several other things. But first, read in the raw data:
 
 ```{r loaddata, results="asis"}
 data <- read.csv(data.file, stringsAsFactors = FALSE)
-library(knitr)
-kable(tail(data, n = 3), format = "markdown")
+knitr::kable(tail(data, n = 3), format = "markdown")
 ```
 
 It looks like the `interval` is computed as *24-hour-digit + amount-of-minutes*,
@@ -73,13 +71,13 @@ the notion of what day of the week the measurements were taken.
 ```{r preproccesdata, results="asis"}
 data$date <- as.POSIXct(data$date)
 data$day <- as.factor(weekdays(data$date, abbreviate = TRUE))
-kable(data[287:290, ], format = "markdown")
+knitr::kable(data[287:290, ], format = "markdown")
 ```
 
 <a id="summary"/>
 Here is a summary of the preprocessed data:
 ```{r summarydata, results="asis"}
-kable(summary(data), format = "markdown")
+knitr::kable(summary(data), format = "markdown")
 ```
 
 ## What is mean total number of steps taken per day?
@@ -88,7 +86,7 @@ aggdata1 <- aggregate(steps ~ date, data = data, sum)
 aggdata2 <- aggregate(data$steps, by=list(data$date), FUN=sum, na.rm=TRUE)
 
 meantotal <- as.integer(mean(aggdata1$steps))
-mediantotal <- median(aggdata1$steps)
+mediantotal <- as.integer(median(aggdata1$steps))
 ```
 
 There are `r sum(is.na(data$steps))` missing values in 
@@ -124,6 +122,7 @@ Median total steps per day:  `r mediantotal` (red)
 The average daily activity pattern can be computed by taking the mean amount of
 steps per 5-minute interval. The figure below illustrates this average daily
 pattern.
+
 ```{r dailypattern}
 stin <- aggregate(steps ~ interval, data = data, mean)
 mx <- stin$interval[which.max(stin$steps)]
@@ -172,7 +171,7 @@ newdata[is.na(newdata$steps), ]$steps <- round(newdata[is.na(newdata$steps), ]$a
 newdata <- newdata[order(newdata$date, newdata$interval), ]
 newdata <- newdata[, c(3, 4, 1, 2)]
 row.names(newdata) <- NULL
-kable(summary(newdata), format = "markdown")
+knitr::kable(summary(newdata), format = "markdown")
 ```
 
 Let's compare the new data with the old data, and see what is the impact of 
@@ -181,7 +180,7 @@ imputing missing data.
 ```{r histsteps2}
 aggdata <- aggregate(steps ~ date, data = newdata, sum)
 newmeantotal <- as.integer(mean(aggdata$steps))
-newmediantotal <- median(aggdata$steps)
+newmediantotal <- as.integer(median(aggdata$steps))
 diffmean <- format(((newmeantotal - meantotal)/meantotal) * 100, 
                    digits = 2, nsmall = 1)
 diffmedian <- format(((newmediantotal - mediantotal)/mediantotal) * 100, 

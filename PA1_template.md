@@ -11,8 +11,7 @@ Reproducible Research: Peer Assessment 1
 
 
 ```r
-echo = TRUE
-options(scipen = 1)
+knitr::opts_chunk$set(echo=TRUE)
 ```
 
 <!--
@@ -76,8 +75,7 @@ reveals several other things. But first, read in the raw data:
 
 ```r
 data <- read.csv(data.file, stringsAsFactors = FALSE)
-library(knitr)
-kable(tail(data, n = 3), format = "markdown")
+knitr::kable(tail(data, n = 3), format = "markdown")
 ```
 
 
@@ -98,7 +96,7 @@ the notion of what day of the week the measurements were taken.
 ```r
 data$date <- as.POSIXct(data$date)
 data$day <- as.factor(weekdays(data$date, abbreviate = TRUE))
-kable(data[287:290, ], format = "markdown")
+knitr::kable(data[287:290, ], format = "markdown")
 ```
 
 
@@ -114,7 +112,7 @@ kable(data[287:290, ], format = "markdown")
 Here is a summary of the preprocessed data:
 
 ```r
-kable(summary(data), format = "markdown")
+knitr::kable(summary(data), format = "markdown")
 ```
 
 
@@ -136,7 +134,7 @@ aggdata1 <- aggregate(steps ~ date, data = data, sum)
 aggdata2 <- aggregate(data$steps, by=list(data$date), FUN=sum, na.rm=TRUE)
 
 meantotal <- as.integer(mean(aggdata1$steps))
-mediantotal <- median(aggdata1$steps)
+mediantotal <- as.integer(median(aggdata1$steps))
 ```
 
 There are 2304 missing values in 
@@ -175,6 +173,7 @@ Median total steps per day:  10765 (red)
 The average daily activity pattern can be computed by taking the mean amount of
 steps per 5-minute interval. The figure below illustrates this average daily
 pattern.
+
 
 ```r
 stin <- aggregate(steps ~ interval, data = data, mean)
@@ -228,7 +227,7 @@ newdata[is.na(newdata$steps), ]$steps <- round(newdata[is.na(newdata$steps), ]$a
 newdata <- newdata[order(newdata$date, newdata$interval), ]
 newdata <- newdata[, c(3, 4, 1, 2)]
 row.names(newdata) <- NULL
-kable(summary(newdata), format = "markdown")
+knitr::kable(summary(newdata), format = "markdown")
 ```
 
 
@@ -250,7 +249,7 @@ imputing missing data.
 ```r
 aggdata <- aggregate(steps ~ date, data = newdata, sum)
 newmeantotal <- as.integer(mean(aggdata$steps))
-newmediantotal <- median(aggdata$steps)
+newmediantotal <- as.integer(median(aggdata$steps))
 diffmean <- format(((newmeantotal - meantotal)/meantotal) * 100, 
                    digits = 2, nsmall = 1)
 diffmedian <- format(((newmediantotal - mediantotal)/mediantotal) * 100, 
