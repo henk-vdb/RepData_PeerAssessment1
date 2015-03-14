@@ -127,7 +127,7 @@ pattern.
 stin <- aggregate(steps ~ interval, data = data, mean)
 mx <- stin$interval[which.max(stin$steps)]
 my <- max(stin$steps)
-mtext <- paste0(as.integer(mx/100), ":", mx %% 100, ", ", 
+mtext <- paste0(as.integer(mx/100), ":", mx %% 100, " AM, ", 
                 as.integer(my), " steps on average")
 plot(stin$interval, stin$steps, type="l", lwd = 2,
      main="The average daily activity pattern",

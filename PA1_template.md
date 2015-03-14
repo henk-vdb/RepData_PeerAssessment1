@@ -179,7 +179,7 @@ pattern.
 stin <- aggregate(steps ~ interval, data = data, mean)
 mx <- stin$interval[which.max(stin$steps)]
 my <- max(stin$steps)
-mtext <- paste0(as.integer(mx/100), ":", mx %% 100, ", ", 
+mtext <- paste0(as.integer(mx/100), ":", mx %% 100, " AM, ", 
                 as.integer(my), " steps on average")
 plot(stin$interval, stin$steps, type="l", lwd = 2,
      main="The average daily activity pattern",
@@ -190,7 +190,7 @@ text(x = mx, y = my, labels = mtext, pos = 4, cex = 0.9)
 
 ![plot of chunk dailypattern](figure/dailypattern-1.png) 
 
-The maximum activity takes place in the morning. At 8:35, 206 steps on average are taken. This
+The maximum activity takes place in the morning. At 8:35 AM, 206 steps on average are taken. This
 corresponds to the interval notation 835.
 
 ## Imputing missing values
