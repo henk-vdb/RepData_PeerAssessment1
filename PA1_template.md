@@ -190,7 +190,8 @@ text(x = mx, y = my, labels = mtext, pos = 4, cex = 0.9)
 
 ![plot of chunk daily_pattern_plot1](figure/daily_pattern_plot1-1.png) 
 
-The maximum activity takes place in the morning. At 8:35 AM, 206 steps on average are taken. The 
+The maximum activity takes place in the morning. At 8:35 AM, 206 steps on average are taken in a 
+5-minute interval. The 
 time corresponds to the interval notation 835.
 
 ## Imputing missing values

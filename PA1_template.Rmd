@@ -136,7 +136,8 @@ plot(stin$interval, stin$steps, type="l", lwd = 2,
 text(x = mx, y = my, labels = mtext, pos = 4, cex = 0.9)
 ```
 
-The maximum activity takes place in the morning. At `r mtext` are taken. The 
+The maximum activity takes place in the morning. At `r mtext` are taken in a 
+5-minute interval. The 
 time corresponds to the interval notation `r mx`.
 
 ## Imputing missing values
