@@ -185,7 +185,7 @@ plot(stin$interval, stin$steps, type="l", lwd = 2,
      main="The average daily activity pattern",
      ylab="steps per 5-minute interval",
      xlab="5-minute interval")
-text(x = mx, y = my, labels = mtext, pos = 4, cex = 0.8)
+text(x = mx, y = my, labels = mtext, pos = 4, cex = 0.9)
 ```
 
 ![plot of chunk dailypattern](figure/dailypattern-1.png) 
