@@ -56,10 +56,7 @@ As we can see and already know from [other sources] [2] the data has 3 fields:
 taken
 
 A <a href="data/activity.csv" target="_blank">further inspection</a> of the data 
-reveals several other things.
-It looks like the `interval` is computed as *24-hour-digit + amount-of-minutes*,
-so we can recompute `date` and `interval` as a continuous `time` field of 
-type [POSIXct] [3]. But first, read in the raw data:
+reveals several other things. But first, read in the raw data:
 
 ```{r loaddata, results="asis"}
 data <- read.csv(data.file, stringsAsFactors = FALSE)
@@ -67,15 +64,19 @@ library(knitr)
 kable(tail(data, n = 3), format = "markdown")
 ```
 
-Create an extra `time` field on basis of `date` and `interval` values:
+It looks like the `interval` is computed as *24-hour-digit + amount-of-minutes*,
+so we might recompute `date` and `interval` as a continuous `time` field of 
+type [POSIXct] [3], but inspecting the questions for this assignment, it looks
+as though we do not need such a continuous `time` field. What we do need is
+the notion of what day of the week the measurements were taken.
 
 ```{r preproccesdata, results="asis"}
-data$time <- as.POSIXct(paste0(data$date, " ", as.integer(data$interval/100), 
-        ":", data$interval %% 100))
-
+data$date <- as.POSIXct(data$date)
+data$day <- as.factor(weekdays(data$date, abbreviate = TRUE))
 kable(data[287:290, ], format = "markdown")
 ```
 
+<a id="summary"/>
 Here is a summary of the preprocessed data:
 ```{r summarydata, results="asis"}
 kable(summary(data), format = "markdown")
@@ -130,18 +131,78 @@ my <- max(stin$steps)
 mtext <- paste0(as.integer(mx/100), ":", mx %% 100, " AM, ", 
                 as.integer(my), " steps on average")
 plot(stin$interval, stin$steps, type="l", lwd = 2,
-     main="The average daily activity pattern",
+     main="Average daily activity pattern",
      ylab="steps per 5-minute interval",
      xlab="5-minute interval")
 text(x = mx, y = my, labels = mtext, pos = 4, cex = 0.9)
 ```
 
-The maximum activity takes place in the morning. At `r mtext` are taken. This
-corresponds to the interval notation `r mx`.
+The maximum activity takes place in the morning. At `r mtext` are taken. The 
+time corresponds to the interval notation `r mx`.
 
 ## Imputing missing values
 
+```{r missing}
+missingvalues <- nrow(data[is.na(data$steps), ])
+aggdata3 <- aggregate(data$steps, by=list(data$date), FUN=sum)
+missingdays <- nrow(aggdata3[is.na(aggdata3$x), ])
+lowdays <- nrow(aggdata3[aggdata3$x < 100, ])
+```
 
+The total number of missing values is `r missingvalues`. As we have seen
+[earlier] [4], there are only missing values in the column `steps`. These
+missing values are concentrated in `r missingdays` days that have no values
+at all. These `r missingdays` missing days are responsible for the total
+amount of missing values: 12 * 24 * 8 = `r 12 * 24 * 8`.
+
+There are also `r lowdays` days in which the person took less than 100 steps
+for the whole day. These low values are in contrast with average amount of steps taken
+each day, but whether this indicates a failure in the measurements or the
+person was ill, very lazy or whatever we cannot say.
+
+A strategy to input the missing values for the 8 days would be to compute the 
+average values for day of the week and time of day and than replace the missing values by
+the computed averages for that day of the week and time of day. Here we go.
+
+```{r inputmissing}
+stind <- aggregate(steps ~ interval + day, data = data, mean)
+colnames(stind) <- c("interval", "day", "avsteps")
+newdata <- merge(data, stind, by = c("interval", "day"), all.x = TRUE, sort = FALSE)
+newdata[is.na(newdata$steps), ]$steps <- round(newdata[is.na(newdata$steps), ]$avsteps)
+newdata <- newdata[order(newdata$date, newdata$interval), ]
+newdata <- newdata[, c(3, 4, 1, 2)]
+row.names(newdata) <- NULL
+kable(summary(newdata), format = "markdown")
+```
+
+Let's compare the new data with the old data, and see what is the impact of 
+imputing missing data.
+
+```{r histsteps2}
+aggdata <- aggregate(steps ~ date, data = newdata, sum)
+newmeantotal <- as.integer(mean(aggdata$steps))
+newmediantotal <- median(aggdata$steps)
+diffmean <- format(((newmeantotal - meantotal)/meantotal) * 100, 
+                   digits = 2, nsmall = 1)
+diffmedian <- format(((newmediantotal - mediantotal)/mediantotal) * 100, 
+                     digits = 3, nsmall = 1)
+hist(aggdata$steps,
+     main="Histogram of total amount of steps per day (corrected)", 
+     xlab="steps per day",
+     col = "aliceblue")
+abline(v = newmediantotal, col = "red", lwd = 2, lty = 1)
+abline(v = newmeantotal, col = "blue", lwd = 2, lty = 2)
+```
+
+Below the mean and median steps per day according to the newly created dataset.
+In brackets the value that was
+computed earlier with the missing data still in the dataset.   
+Blue: Mean total steps per day: `r newmeantotal` (`r meantotal`) `r diffmean`%   
+Red: Median total steps per day:  `r newmediantotal` (`r mediantotal`) `r diffmedian`%
+
+The impact of imputing missing data on the estimates of the total daily number 
+of steps is minimal. For mean and median this means an increase of
+`r diffmean`% and `r diffmedian`% respectively.
 
 ## Are there differences in activity patterns between weekdays and weekends?
 
@@ -150,4 +211,5 @@ corresponds to the interval notation `r mx`.
 [1]: https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip
 [2]: https://github.com/rdpeng/RepData_PeerAssessment1/blob/master/README.md
 [3]: https://stat.ethz.ch/R-manual/R-devel/library/base/html/DateTimeClasses.html
+[4]: #summary
 

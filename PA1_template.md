@@ -71,10 +71,7 @@ As we can see and already know from [other sources] [2] the data has 3 fields:
 taken
 
 A <a href="data/activity.csv" target="_blank">further inspection</a> of the data 
-reveals several other things.
-It looks like the `interval` is computed as *24-hour-digit + amount-of-minutes*,
-so we can recompute `date` and `interval` as a continuous `time` field of 
-type [POSIXct] [3]. But first, read in the raw data:
+reveals several other things. But first, read in the raw data:
 
 
 ```r
@@ -91,25 +88,29 @@ kable(tail(data, n = 3), format = "markdown")
 |17567 |    NA|2012-11-30 |     2350|
 |17568 |    NA|2012-11-30 |     2355|
 
-Create an extra `time` field on basis of `date` and `interval` values:
+It looks like the `interval` is computed as *24-hour-digit + amount-of-minutes*,
+so we might recompute `date` and `interval` as a continuous `time` field of 
+type [POSIXct] [3], but inspecting the questions for this assignment, it looks
+as though we do not need such a continuous `time` field. What we do need is
+the notion of what day of the week the measurements were taken.
 
 
 ```r
-data$time <- as.POSIXct(paste0(data$date, " ", as.integer(data$interval/100), 
-        ":", data$interval %% 100))
-
+data$date <- as.POSIXct(data$date)
+data$day <- as.factor(weekdays(data$date, abbreviate = TRUE))
 kable(data[287:290, ], format = "markdown")
 ```
 
 
 
-|    | steps|date       | interval|time                |
-|:---|-----:|:----------|--------:|:-------------------|
-|287 |    NA|2012-10-01 |     2350|2012-10-01 23:50:00 |
-|288 |    NA|2012-10-01 |     2355|2012-10-01 23:55:00 |
-|289 |     0|2012-10-02 |        0|2012-10-02 00:00:00 |
-|290 |     0|2012-10-02 |        5|2012-10-02 00:05:00 |
+|    | steps|date       | interval|day |
+|:---|-----:|:----------|--------:|:---|
+|287 |    NA|2012-10-01 |     2350|Mon |
+|288 |    NA|2012-10-01 |     2355|Mon |
+|289 |     0|2012-10-02 |        0|Tue |
+|290 |     0|2012-10-02 |        5|Tue |
 
+<a id="summary"/>
 Here is a summary of the preprocessed data:
 
 ```r
@@ -118,15 +119,15 @@ kable(summary(data), format = "markdown")
 
 
 
-|   |    steps        |    date           |   interval      |     time                     |
-|:--|:----------------|:------------------|:----------------|:-----------------------------|
-|   |Min.   :  0.00   |Length:17568       |Min.   :   0.0   |Min.   :2012-10-01 00:00:00   |
-|   |1st Qu.:  0.00   |Class :character   |1st Qu.: 588.8   |1st Qu.:2012-10-16 05:58:45   |
-|   |Median :  0.00   |Mode  :character   |Median :1177.5   |Median :2012-10-31 11:57:30   |
-|   |Mean   : 37.38   |NA                 |Mean   :1177.5   |Mean   :2012-10-31 11:30:49   |
-|   |3rd Qu.: 12.00   |NA                 |3rd Qu.:1766.2   |3rd Qu.:2012-11-15 17:56:15   |
-|   |Max.   :806.00   |NA                 |Max.   :2355.0   |Max.   :2012-11-30 23:55:00   |
-|   |NA's   :2304     |NA                 |NA               |NA                            |
+|   |    steps        |     date                     |   interval      | day       |
+|:--|:----------------|:-----------------------------|:----------------|:----------|
+|   |Min.   :  0.00   |Min.   :2012-10-01 00:00:00   |Min.   :   0.0   |Fri:2592   |
+|   |1st Qu.:  0.00   |1st Qu.:2012-10-16 00:00:00   |1st Qu.: 588.8   |Mon:2592   |
+|   |Median :  0.00   |Median :2012-10-31 00:00:00   |Median :1177.5   |Sat:2304   |
+|   |Mean   : 37.38   |Mean   :2012-10-30 23:32:27   |Mean   :1177.5   |Sun:2304   |
+|   |3rd Qu.: 12.00   |3rd Qu.:2012-11-15 00:00:00   |3rd Qu.:1766.2   |Thu:2592   |
+|   |Max.   :806.00   |Max.   :2012-11-30 00:00:00   |Max.   :2355.0   |Tue:2592   |
+|   |NA's   :2304     |NA                            |NA               |Wed:2592   |
 
 ## What is mean total number of steps taken per day?
 
@@ -182,7 +183,7 @@ my <- max(stin$steps)
 mtext <- paste0(as.integer(mx/100), ":", mx %% 100, " AM, ", 
                 as.integer(my), " steps on average")
 plot(stin$interval, stin$steps, type="l", lwd = 2,
-     main="The average daily activity pattern",
+     main="Average daily activity pattern",
      ylab="steps per 5-minute interval",
      xlab="5-minute interval")
 text(x = mx, y = my, labels = mtext, pos = 4, cex = 0.9)
@@ -190,12 +191,89 @@ text(x = mx, y = my, labels = mtext, pos = 4, cex = 0.9)
 
 ![plot of chunk dailypattern](figure/dailypattern-1.png) 
 
-The maximum activity takes place in the morning. At 8:35 AM, 206 steps on average are taken. This
-corresponds to the interval notation 835.
+The maximum activity takes place in the morning. At 8:35 AM, 206 steps on average are taken. The 
+time corresponds to the interval notation 835.
 
 ## Imputing missing values
 
 
+```r
+missingvalues <- nrow(data[is.na(data$steps), ])
+aggdata3 <- aggregate(data$steps, by=list(data$date), FUN=sum)
+missingdays <- nrow(aggdata3[is.na(aggdata3$x), ])
+lowdays <- nrow(aggdata3[aggdata3$x < 100, ])
+```
+
+The total number of missing values is 2304. As we have seen
+[earlier] [4], there are only missing values in the column `steps`. These
+missing values are concentrated in 8 days that have no values
+at all. These 8 missing days are responsible for the total
+amount of missing values: 12 * 24 * 8 = 2304.
+
+There are also 9 days in which the person took less than 100 steps
+for the whole day. These low values are in contrast with average amount of steps taken
+each day, but whether this indicates a failure in the measurements or the
+person was ill, very lazy or whatever we cannot say.
+
+A strategy to input the missing values for the 8 days would be to compute the 
+average values for day of the week and time of day and than replace the missing values by
+the computed averages for that day of the week and time of day. Here we go.
+
+
+```r
+stind <- aggregate(steps ~ interval + day, data = data, mean)
+colnames(stind) <- c("interval", "day", "avsteps")
+newdata <- merge(data, stind, by = c("interval", "day"), all.x = TRUE, sort = FALSE)
+newdata[is.na(newdata$steps), ]$steps <- round(newdata[is.na(newdata$steps), ]$avsteps)
+newdata <- newdata[order(newdata$date, newdata$interval), ]
+newdata <- newdata[, c(3, 4, 1, 2)]
+row.names(newdata) <- NULL
+kable(summary(newdata), format = "markdown")
+```
+
+
+
+|   |    steps        |     date                     |   interval      | day       |
+|:--|:----------------|:-----------------------------|:----------------|:----------|
+|   |Min.   :  0.00   |Min.   :2012-10-01 00:00:00   |Min.   :   0.0   |Fri:2592   |
+|   |1st Qu.:  0.00   |1st Qu.:2012-10-16 00:00:00   |1st Qu.: 588.8   |Mon:2592   |
+|   |Median :  0.00   |Median :2012-10-31 00:00:00   |Median :1177.5   |Sat:2304   |
+|   |Mean   : 37.57   |Mean   :2012-10-30 23:32:27   |Mean   :1177.5   |Sun:2304   |
+|   |3rd Qu.: 19.00   |3rd Qu.:2012-11-15 00:00:00   |3rd Qu.:1766.2   |Thu:2592   |
+|   |Max.   :806.00   |Max.   :2012-11-30 00:00:00   |Max.   :2355.0   |Tue:2592   |
+|   |NA               |NA                            |NA               |Wed:2592   |
+
+Let's compare the new data with the old data, and see what is the impact of 
+imputing missing data.
+
+
+```r
+aggdata <- aggregate(steps ~ date, data = newdata, sum)
+newmeantotal <- as.integer(mean(aggdata$steps))
+newmediantotal <- median(aggdata$steps)
+diffmean <- format(((newmeantotal - meantotal)/meantotal) * 100, 
+                   digits = 2, nsmall = 1)
+diffmedian <- format(((newmediantotal - mediantotal)/mediantotal) * 100, 
+                     digits = 3, nsmall = 1)
+hist(aggdata$steps,
+     main="Histogram of total amount of steps per day (corrected)", 
+     xlab="steps per day",
+     col = "aliceblue")
+abline(v = newmediantotal, col = "red", lwd = 2, lty = 1)
+abline(v = newmeantotal, col = "blue", lwd = 2, lty = 2)
+```
+
+![plot of chunk histsteps2](figure/histsteps2-1.png) 
+
+Below the mean and median steps per day according to the newly created dataset.
+In brackets the value that was
+computed earlier with the missing data still in the dataset.   
+Blue: Mean total steps per day: 10821 (10766) 0.51%   
+Red: Median total steps per day:  11015 (10765) 2.32%
+
+The impact of imputing missing data on the estimates of the total daily number 
+of steps is minimal. For mean and median this means an increase of
+0.51% and 2.32% respectively.
 
 ## Are there differences in activity patterns between weekdays and weekends?
 
@@ -204,4 +282,5 @@ corresponds to the interval notation 835.
 [1]: https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip
 [2]: https://github.com/rdpeng/RepData_PeerAssessment1/blob/master/README.md
 [3]: https://stat.ethz.ch/R-manual/R-devel/library/base/html/DateTimeClasses.html
+[4]: #summary
 
