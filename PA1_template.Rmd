@@ -41,7 +41,7 @@ The dataset is downloaded and unzipped in a single file as `data/activity.csv`.
 ## Loading and preprocessing the data
 
 We can inspect the raw data by reading the first lines from the data file...
-```{r inspectfile, results="asis"}
+```{r inspect_file, results="asis"}
 data.file <- "data/activity.csv"
 cat("<pre>\n", paste0(readLines(data.file, n = 5), collapse = "<br/>"), "\n</pre>", sep = "")
 ```
@@ -57,7 +57,7 @@ taken
 A <a href="data/activity.csv" target="_blank">further inspection</a> of the data 
 reveals several other things. But first, read in the raw data:
 
-```{r loaddata, results="asis"}
+```{r load_data, results="asis"}
 data <- read.csv(data.file, stringsAsFactors = FALSE)
 knitr::kable(tail(data, n = 3), format = "markdown")
 ```
@@ -68,7 +68,7 @@ type [POSIXct] [3], but inspecting the questions for this assignment, it looks
 as though we do not need such a continuous `time` field. What we do need is
 the notion of what day of the week the measurements were taken.
 
-```{r preproccesdata, results="asis"}
+```{r preprocces_data, results="asis"}
 data$date <- as.POSIXct(data$date)
 data$day <- as.factor(weekdays(data$date, abbreviate = TRUE))
 knitr::kable(data[287:290, ], format = "markdown")
@@ -76,12 +76,12 @@ knitr::kable(data[287:290, ], format = "markdown")
 
 <a id="summary"/>
 Here is a summary of the preprocessed data:
-```{r summarydata, results="asis"}
+```{r summary_data, results="asis"}
 knitr::kable(summary(data), format = "markdown")
 ```
 
 ## What is mean total number of steps taken per day?
-```{r totalsteps}
+```{r total_steps}
 aggdata1 <- aggregate(steps ~ date, data = data, sum)
 aggdata2 <- aggregate(data$steps, by=list(data$date), FUN=sum, na.rm=TRUE)
 
@@ -102,7 +102,7 @@ If we do not want missing values affect the mean calculation too much, we
 go for the aggdata1 aggregation and
 arive at a mean total of `r meantotal` steps taken per day.
 
-```{r histsteps}
+```{r hist_steps_plot1}
 hist(aggdata1$steps,
      main="Histogram of total amount of steps per day", 
      xlab="steps per day (October - November, 2012)",
@@ -123,7 +123,7 @@ The average daily activity pattern can be computed by taking the mean amount of
 steps per 5-minute interval. The figure below illustrates this average daily
 pattern.
 
-```{r dailypattern}
+```{r daily_pattern_plot1}
 stin <- aggregate(steps ~ interval, data = data, mean)
 mx <- stin$interval[which.max(stin$steps)]
 my <- max(stin$steps)
@@ -163,7 +163,7 @@ A strategy to input the missing values for the 8 days would be to compute the
 average values for day of the week and time of day and than replace the missing values by
 the computed averages for that day of the week and time of day. Here we go.
 
-```{r inputmissing}
+```{r input_missing}
 stind <- aggregate(steps ~ interval + day, data = data, mean)
 colnames(stind) <- c("interval", "day", "avsteps")
 newdata <- merge(data, stind, by = c("interval", "day"), all.x = TRUE, sort = FALSE)
@@ -177,7 +177,7 @@ knitr::kable(summary(newdata), format = "markdown")
 Let's compare the new data with the old data, and see what is the impact of 
 imputing missing data.
 
-```{r histsteps2}
+```{r hist_steps_plot2}
 aggdata <- aggregate(steps ~ date, data = newdata, sum)
 newmeantotal <- as.integer(mean(aggdata$steps))
 newmediantotal <- as.integer(median(aggdata$steps))
@@ -205,6 +205,26 @@ of steps is minimal. For mean and median this means an increase of
 
 ## Are there differences in activity patterns between weekdays and weekends?
 
+We'll create a new factor variable in the dataset with two levels - "weekday" 
+and "weekend" indicating whether a given date is a weekday or weekend day.
+
+```{r weekdays_and_weekend}
+newdata$day.type <- as.factor(ifelse(newdata$day == "Sat" | newdata$day == "Sun",
+                           "weekend", "weekday"))
+str(newdata)
+```
+
+The difference between activity levels for weekdays and weekends is
+vizualised in the chart below.
+
+```{r daily_pattern_plot2}
+library(lattice)
+stin <- aggregate(steps ~ interval + day.type, data = newdata, mean)
+xyplot(steps ~ interval|day.type, data = stin, type = "l", layout=c(1,2),
+       main = "Average daily activity pattern",
+       ylab = "Number of steps",
+       xlab = "Interval")
+```
 
 ***
 [1]: https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip

@@ -160,7 +160,7 @@ abline(v = mediantotal, col = "red", lwd = 2, lty = 1)
 abline(v = meantotal, col = "blue", lwd = 2, lty = 2)
 ```
 
-![plot of chunk histsteps](figure/histsteps-1.png) 
+![plot of chunk hist_steps_plot1](figure/hist_steps_plot1-1.png) 
 
 It appears there is a symetric distribution of the data, with mean and median 
 values almost equal.
@@ -188,7 +188,7 @@ plot(stin$interval, stin$steps, type="l", lwd = 2,
 text(x = mx, y = my, labels = mtext, pos = 4, cex = 0.9)
 ```
 
-![plot of chunk dailypattern](figure/dailypattern-1.png) 
+![plot of chunk daily_pattern_plot1](figure/daily_pattern_plot1-1.png) 
 
 The maximum activity takes place in the morning. At 8:35 AM, 206 steps on average are taken. The 
 time corresponds to the interval notation 835.
@@ -262,7 +262,7 @@ abline(v = newmediantotal, col = "red", lwd = 2, lty = 1)
 abline(v = newmeantotal, col = "blue", lwd = 2, lty = 2)
 ```
 
-![plot of chunk histsteps2](figure/histsteps2-1.png) 
+![plot of chunk hist_steps_plot2](figure/hist_steps_plot2-1.png) 
 
 Below the mean and median steps per day according to the newly created dataset.
 In brackets the value that was
@@ -276,6 +276,39 @@ of steps is minimal. For mean and median this means an increase of
 
 ## Are there differences in activity patterns between weekdays and weekends?
 
+We'll create a new factor variable in the dataset with two levels - "weekday" 
+and "weekend" indicating whether a given date is a weekday or weekend day.
+
+
+```r
+newdata$day.type <- as.factor(ifelse(newdata$day == "Sat" | newdata$day == "Sun",
+                           "weekend", "weekday"))
+str(newdata)
+```
+
+```
+## 'data.frame':	17568 obs. of  5 variables:
+##  $ steps   : num  1 0 0 0 0 5 0 0 0 0 ...
+##  $ date    : POSIXct, format: "2012-10-01" "2012-10-01" ...
+##  $ interval: int  0 5 10 15 20 25 30 35 40 45 ...
+##  $ day     : Factor w/ 7 levels "Fri","Mon","Sat",..: 2 2 2 2 2 2 2 2 2 2 ...
+##  $ day.type: Factor w/ 2 levels "weekday","weekend": 1 1 1 1 1 1 1 1 1 1 ...
+```
+
+The difference between activity levels for weekdays and weekends is
+vizualised in the chart below.
+
+
+```r
+library(lattice)
+stin <- aggregate(steps ~ interval + day.type, data = newdata, mean)
+xyplot(steps ~ interval|day.type, data = stin, type = "l", layout=c(1,2),
+       main = "Average daily activity pattern",
+       ylab = "Number of steps",
+       xlab = "Interval")
+```
+
+![plot of chunk daily_pattern_plot2](figure/daily_pattern_plot2-1.png) 
 
 ***
 [1]: https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip
